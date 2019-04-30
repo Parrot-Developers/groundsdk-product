@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="libARMavlink" pattern="file[libARMavlink]:*/" />
+</component>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <FileRef
+      location = "group:../../../../packages/groundsdk-ios/base.xcconfig">
+   </FileRef>
+   <FileRef
+      location = "container:../../../../packages/groundsdk-ios/demo/GroundSdkDemo.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../../../../packages/groundsdk-ios/groundsdk/GroundSdk.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "container:../../../../packages/groundsdk-ios/arsdkengine/ArsdkEngine.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../../../../packages/groundsdk-ios/sdkcore/SdkCore.xcodeproj">
+   </FileRef>
+</Workspace>

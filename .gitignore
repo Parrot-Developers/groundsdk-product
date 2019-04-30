@@ -1,0 +1,31 @@
+# android studio: keep only interesting stuff
+**/.idea/.name
+**/.idea/caches
+**/.idea/libraries
+**/.idea/modules.xml
+**/.idea/workspace.xml
+**/.idea/navEditor.xml
+**/.idea/assetWizardSettings.xml
+**/.idea/vcs.xml
+!**/.idea/dictionaries
+**/.idea/dictionaries/*
+!**/.idea/dictionaries/common.xml
+*.iml
+
+# gradle
+.gradle
+local.properties
+
+# xcode workspace
+**/xcuserdata/
+**/xcshareddata/*.xcscmblueprint
+
+# backup files
+*~
+*.swp
+
+# Mac junk
+.DS_Store
+
+# private directory
+private/

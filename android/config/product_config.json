@@ -1,0 +1,14 @@
+{
+    "publish": {
+        "application": {
+            "type": "android",
+            "name": "GroundSDK Demo",
+            "inhouse": [
+                {
+                    "flavor": null,
+                    "image": "groundsdkdemo-debug.apk"
+                }
+            ]
+        }
+    }
+}

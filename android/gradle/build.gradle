@@ -1,0 +1,194 @@
+import com.android.build.gradle.AppPlugin
+import com.android.build.gradle.BasePlugin
+import com.android.build.gradle.LibraryPlugin
+import org.gradle.internal.jvm.Jvm
+
+buildscript {
+    allprojects {
+        ext {
+            androidGradleVersion = '3.4.0'
+            // instant run does not support jacoco 0.8.2+ ; see https://issuetracker.google.com/issues/118709917
+            jacocoVersion = '0.8.1'
+        }
+    }
+
+    repositories {
+        google()
+        jcenter()
+    }
+
+    dependencies {
+        classpath "com.android.tools.build:gradle:${androidGradleVersion}"
+        classpath "org.jacoco:org.jacoco.core:${jacocoVersion}"
+    }
+}
+
+allprojects {
+    ext {
+        // product name: must be the name of a product definition directory in product
+        product = "groundsdk"
+        // groundsdk product version
+        versionCode = (findProperty('appVersionCode') ?: 1) as int
+        versionName = findProperty('appVersionName') ?: '0.0.0'
+        versionNameSuffix = findProperty('appVersionNameSuffix')
+        // workspace root directory
+        root_dir = gradle.ext.root_dir
+        // put all build files into workspace out
+        root_build_dir = "${findProperty('alchemyOutRoot') ?: "${root_dir}/out"}/${ext.product}-android/gradle/"
+        // address sanitizer directories
+        asan_libs = "${root_build_dir}/../asan/libs"
+        asan_scripts = "${root_build_dir}/../asan/scripts"
+        // arsdk commands xml
+        arsdkxmldir = "${root_dir}/packages/common/arsdk-xml/"
+        // common configurations
+        minSdkVersion = 24
+        targetSdkVersion = 28
+        compileSdkVersion = 28
+        supportLibVersion = '28.0.0'
+        // Android support libraries
+        supportAnnotations = "com.android.support:support-annotations:${supportLibVersion}"
+        supportCoreUtils = "com.android.support:support-core-utils:${supportLibVersion}"
+        // we need to explicitly add support v4 (which Play Services Location depends on) to force same version as
+        // other support libraries
+        supportV4 = "com.android.support:support-v4:${supportLibVersion}"
+        // Google Play Services
+        googlePlayServicesLocation = 'com.google.android.gms:play-services-location:16.0.0'
+        // Retrofit
+        retrofit = 'com.squareup.retrofit2:retrofit:2.5.0'
+        retrofitGsonConverter = 'com.squareup.retrofit2:converter-gson:2.5.0'
+        retrofitScalarsConverter = 'com.squareup.retrofit2:converter-scalars:2.5.0'
+        retrofitLoggingInterceptor = 'com.squareup.okhttp3:logging-interceptor:3.13.1'
+        gson = 'com.google.code.gson:gson:2.8.5'
+        // test dependencies
+        testRunner = 'com.android.support.test:runner:1.0.2'
+        hamcrest = 'org.hamcrest:hamcrest:2.1'
+        mockito = "org.mockito:mockito-android:2.24.5"
+    }
+
+    repositories {
+        google()
+        jcenter()
+    }
+
+    group "com.parrot.drone.${product}"
+    version versionName
+    buildDir "${root_build_dir}/${project.name}"
+}
+
+// enable test coverage only if full tests ('connectedCheck') are required from command line
+def coverage = gradle.startParameter.taskNames.contains('connectedCheck')
+
+subprojects { project ->
+
+    afterEvaluate {
+        plugins.matching { it instanceof BasePlugin}.any { plugin ->
+
+            android {
+                compileSdkVersion = project.compileSdkVersion
+
+                defaultConfig {
+                    minSdkVersion minSdkVersion?.apiLevel ?: project.minSdkVersion
+                    targetSdkVersion project.targetSdkVersion
+                    versionCode project.versionCode
+                    versionName project.versionName
+                }
+
+                buildTypes {
+
+                    release {
+                        minifyEnabled false
+                        proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+                    }
+
+                    debug {
+                        versionNameSuffix project.versionNameSuffix
+                        testCoverageEnabled coverage && android.defaultConfig.testInstrumentationRunner != null
+                    }
+                }
+
+                compileOptions {
+                    sourceCompatibility JavaVersion.VERSION_1_8
+                    targetCompatibility JavaVersion.VERSION_1_8
+                }
+
+                if (plugin instanceof AppPlugin) {
+                    signingConfigs {
+                        debug {
+                            storeFile rootProject.file('debug.keystore')
+                            storePassword 'android'
+                            keyAlias 'androiddebugkey'
+                            keyPassword 'android'
+                        }
+                    }
+                }
+
+                if (plugin instanceof LibraryPlugin) {
+                    libraryVariants.matching { it.name == 'release' }.all { variant ->
+                        task('doc', type: Exec) {
+                            description "Generates documentation for ${project}."
+
+                            executable Jvm.current().javadocExecutable
+
+                            args '-docletpath', new File(rootProject.projectDir, 'docdown.jar')
+                            args '-doclet', 'com.parrot.docdown.DocdownDoclet'
+                            args '-t', "${project.name.capitalize()} documentation"
+                            args '-d', new File(project.buildDir, 'doc')
+                            args '-linkoffline', 'http://developer.android.com/reference/',
+                                    "${android.sdkDirectory}/docs/reference"
+                            args '-docsourcepath', project.file('doc')
+                            args '-sourcepath', files(project.android.sourceSets.main.java.srcDirs).asPath
+                            doFirst { // this need to be done after configuration, just before the task runs
+                                def javaCompile = variant.javaCompileProvider.get()
+                                args '-classpath', files(
+                                        javaCompile.destinationDir,
+                                        javaCompile.classpath,
+                                        android.bootClasspath
+                                ).asPath
+                            }
+                            // select packages to generate doc for
+                            args variant.sourceSets.javaDirectories.flatten().collectMany { dir ->
+                                fileTree(dir).matching {
+                                    exclude '**/internal/**' // exclude internal packages
+                                }.collect { // transform directory to package name
+                                    (it.parent - "${dir}/").replace('/', '.')
+                                }
+                            }.unique()
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// apply private configuration
+file("${gradle.ext.root_dir}/products/groundsdk/private/android/build.gradle").with {
+    if (it.exists()) {
+        apply from: it
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
+// Task to build common and jni using alchemy
+task('buildJni', type: Exec) {
+    File propertyFile = rootProject.file('local.properties')
+    if (propertyFile.exists()) {
+        Properties properties = new Properties()
+        properties.load(rootProject.file('local.properties').newDataInputStream())
+        environment ANDROID_NDK_PATH: properties.getProperty('ndk.dir')
+        environment ANDROID_SDK_PATH: properties.getProperty('sdk.dir')
+    } else {
+        environment ANDROID_NDK_PATH: "$System.env.ANDROID_NDK_PATH"
+        environment ANDROID_SDK_PATH: "$System.env.ANDROID_SDK_PATH"
+    }
+    group = "build external"
+    workingDir gradle.ext.root_dir
+    // ensure brew path is set
+    if (org.gradle.internal.os.OperatingSystem.current().macOsX && !environment.PATH.contains('/usr/local/bin')) {
+        environment PATH: "/usr/local/bin:${environment.PATH}"
+    }
+    commandLine = ['./build.sh', '--no-color', '-p', 'groundsdk-android', '-t', 'build-jni', '-j', '8']
+}

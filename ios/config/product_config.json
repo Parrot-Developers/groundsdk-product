@@ -1,0 +1,15 @@
+{
+    "publish": {
+        "application": {
+            "type": "ios",
+            "name": "GroundSDK Demo",
+            "inhouse": [
+                {
+                    "id": "com.parrot.drone.inhouse.GroundSdkDemo",
+                    "flavor": null,
+                    "image": "GroundSdkDemo-inhouse.ipa"
+                }
+            ]
+        }
+    }
+}

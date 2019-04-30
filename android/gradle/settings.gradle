@@ -1,0 +1,22 @@
+rootProject.name = "gsdk"
+
+// root workspace dir
+gradle.ext.root_dir = new File("${rootDir}/../../../../").canonicalPath
+
+include ':groundsdk'
+project(':groundsdk').projectDir = new File(gradle.ext.root_dir, 'packages/groundsdk-android/groundsdk')
+
+include ':arsdkengine'
+project(':arsdkengine').projectDir = new File(gradle.ext.root_dir, 'packages/groundsdk-android/arsdkengine')
+
+include ':groundsdkdemo'
+project(':groundsdkdemo').projectDir = new File(gradle.ext.root_dir, 'packages/groundsdk-android/groundsdkdemo')
+
+include ':sdkcore'
+project(':sdkcore').projectDir = new File(gradle.ext.root_dir, 'packages/groundsdk-android/sdkcore')
+
+include ':sdkcore-testing'
+project(':sdkcore-testing').projectDir = new File(gradle.ext.root_dir, 'packages/groundsdk-android/sdkcore/testing')
+
+include ':libARMavlink'
+project(':libARMavlink').projectDir = new File(gradle.ext.root_dir, 'packages/common/libARMavlink')
