@@ -85,7 +85,7 @@ if dragon.VARIANT == "android":
         name="doc",
         desc="Build GroundSdk API documentation",
         calldir=gsdk.gradle_path,
-        target="groundsdk:doc",
+        target="groundsdk:javadoc",
         abis=gsdk.android_abis
     )
 

@@ -110,52 +110,6 @@ subprojects { project ->
                     sourceCompatibility JavaVersion.VERSION_1_8
                     targetCompatibility JavaVersion.VERSION_1_8
                 }
-
-                if (plugin instanceof AppPlugin) {
-                    signingConfigs {
-                        debug {
-                            storeFile rootProject.file('debug.keystore')
-                            storePassword 'android'
-                            keyAlias 'androiddebugkey'
-                            keyPassword 'android'
-                        }
-                    }
-                }
-
-                if (plugin instanceof LibraryPlugin) {
-                    libraryVariants.matching { it.name == 'release' }.all { variant ->
-                        task('doc', type: Exec) {
-                            description "Generates documentation for ${project}."
-
-                            executable Jvm.current().javadocExecutable
-
-                            args '-docletpath', new File(rootProject.projectDir, 'docdown.jar')
-                            args '-doclet', 'com.parrot.docdown.DocdownDoclet'
-                            args '-t', "${project.name.capitalize()} documentation"
-                            args '-d', new File(project.buildDir, 'doc')
-                            args '-linkoffline', 'http://developer.android.com/reference/',
-                                    "${android.sdkDirectory}/docs/reference"
-                            args '-docsourcepath', project.file('doc')
-                            args '-sourcepath', files(project.android.sourceSets.main.java.srcDirs).asPath
-                            doFirst { // this need to be done after configuration, just before the task runs
-                                def javaCompile = variant.javaCompileProvider.get()
-                                args '-classpath', files(
-                                        javaCompile.destinationDir,
-                                        javaCompile.classpath,
-                                        android.bootClasspath
-                                ).asPath
-                            }
-                            // select packages to generate doc for
-                            args variant.sourceSets.javaDirectories.flatten().collectMany { dir ->
-                                fileTree(dir).matching {
-                                    exclude '**/internal/**' // exclude internal packages
-                                }.collect { // transform directory to package name
-                                    (it.parent - "${dir}/").replace('/', '.')
-                                }
-                            }.unique()
-                        }
-                    }
-                }
             }
         }
     }
