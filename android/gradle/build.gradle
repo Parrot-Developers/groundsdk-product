@@ -6,9 +6,8 @@ import org.gradle.internal.jvm.Jvm
 buildscript {
     allprojects {
         ext {
-            androidGradleVersion = '3.4.0'
-            // instant run does not support jacoco 0.8.2+ ; see https://issuetracker.google.com/issues/118709917
-            jacocoVersion = '0.8.1'
+            androidGradleVersion = '3.5.0'
+            jacocoVersion = '0.8.3'
         }
     }
 
@@ -26,7 +25,7 @@ buildscript {
 allprojects {
     ext {
         // product name: must be the name of a product definition directory in product
-        product = "groundsdk"
+        product = 'groundsdk'
         // groundsdk product version
         versionCode = (findProperty('appVersionCode') ?: 1) as int
         versionName = findProperty('appVersionName') ?: '0.0.0'
@@ -44,25 +43,22 @@ allprojects {
         minSdkVersion = 24
         targetSdkVersion = 28
         compileSdkVersion = 28
-        supportLibVersion = '28.0.0'
         // Android support libraries
-        supportAnnotations = "com.android.support:support-annotations:${supportLibVersion}"
-        supportCoreUtils = "com.android.support:support-core-utils:${supportLibVersion}"
-        // we need to explicitly add support v4 (which Play Services Location depends on) to force same version as
-        // other support libraries
-        supportV4 = "com.android.support:support-v4:${supportLibVersion}"
+        androidXLocalBroadcastManager = 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0'
+        androidXAnnotations = 'androidx.annotation:annotation:1.1.0'
         // Google Play Services
-        googlePlayServicesLocation = 'com.google.android.gms:play-services-location:16.0.0'
+        googlePlayServicesLocation = 'com.google.android.gms:play-services-location:17.0.0'
         // Retrofit
-        retrofit = 'com.squareup.retrofit2:retrofit:2.5.0'
-        retrofitGsonConverter = 'com.squareup.retrofit2:converter-gson:2.5.0'
-        retrofitScalarsConverter = 'com.squareup.retrofit2:converter-scalars:2.5.0'
-        retrofitLoggingInterceptor = 'com.squareup.okhttp3:logging-interceptor:3.13.1'
+        retrofit = 'com.squareup.retrofit2:retrofit:2.6.1'
+        retrofitGsonConverter = 'com.squareup.retrofit2:converter-gson:2.6.1'
+        retrofitScalarsConverter = 'com.squareup.retrofit2:converter-scalars:2.6.1'
+        retrofitLoggingInterceptor = 'com.squareup.okhttp3:logging-interceptor:4.2.0'
         gson = 'com.google.code.gson:gson:2.8.5'
         // test dependencies
-        testRunner = 'com.android.support.test:runner:1.0.2'
+        androidXTestRunner = 'androidx.test:runner:1.2.0'
+        androidXTestCore = 'androidx.test:core:1.2.0'
         hamcrest = 'org.hamcrest:hamcrest:2.1'
-        mockito = "org.mockito:mockito-android:2.24.5"
+        mockito = 'org.mockito:mockito-android:3.0.0'
     }
 
     repositories {
