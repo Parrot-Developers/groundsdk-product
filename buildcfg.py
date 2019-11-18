@@ -133,7 +133,7 @@ if dragon.VARIANT == "ios" or dragon.VARIANT == "ios_sim":
     ios.add_jazzy_task(
         name="doc",
         desc="Generate GroundSdk doc",
-        subtasks=["build"],
+        subtasks=["build-release"],
         calldir=os.path.join(dragon.WORKSPACE_DIR,  "packages", "groundsdk-ios",
             "GroundSdk"),
         scheme="GroundSdk"
@@ -156,6 +156,17 @@ if dragon.VARIANT == "ios" or dragon.VARIANT == "ios_sim":
         configuration="Debug",
         scheme="All",
         action="clean"
+    )
+
+    ios.add_xcodebuild_task(
+        name="build-release",
+        desc="build all ground sdk projects in release mode",
+        subtasks=["build-common"],
+        calldir=gsdk.xcode_path,
+        workspace="groundsdk.xcworkspace",
+        configuration="Release",
+        scheme="GroundSdkDemo",
+        action="build"
     )
 
 if dragon.VARIANT == "ios":
