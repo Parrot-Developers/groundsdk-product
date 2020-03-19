@@ -6,7 +6,7 @@ import org.gradle.internal.jvm.Jvm
 buildscript {
     allprojects {
         ext {
-            androidGradleVersion = '3.5.0'
+            androidGradleVersion = '3.6.1'
             jacocoVersion = '0.8.3'
         }
     }
