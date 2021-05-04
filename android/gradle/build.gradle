@@ -6,14 +6,23 @@ import org.gradle.internal.jvm.Jvm
 buildscript {
     allprojects {
         ext {
-            androidGradleVersion = '4.0.1'
-            jacocoVersion = '0.8.5'
+            androidGradleVersion = '4.1.3'
+            jacocoVersion = '0.8.6'
         }
     }
 
     repositories {
+        mavenCentral()
         google()
-        jcenter()
+        jcenter() {
+            // jcenter is scheduled for shutdown on May, 2021.
+            // All dependencies have to be found elsewhere by that time.
+            // List exhaustively all dependencies that still can only be found on
+            // jcenter. To be maintained regularly.
+            content {
+                includeModule('org.jetbrains.trove4j', 'trove4j')
+            }
+        }
     }
 
     dependencies {
@@ -43,6 +52,10 @@ allprojects {
         minSdkVersion = 24
         targetSdkVersion = 29
         compileSdkVersion = 29
+
+        // Java version
+        javaVersion = JavaVersion.VERSION_1_8
+
         // Android support libraries
         androidXLocalBroadcastManager = 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0'
         androidXAnnotations = 'androidx.annotation:annotation:1.1.0'
@@ -52,18 +65,27 @@ allprojects {
         retrofit = 'com.squareup.retrofit2:retrofit:2.9.0'
         retrofitGsonConverter = 'com.squareup.retrofit2:converter-gson:2.9.0'
         retrofitScalarsConverter = 'com.squareup.retrofit2:converter-scalars:2.9.0'
-        retrofitLoggingInterceptor = 'com.squareup.okhttp3:logging-interceptor:4.8.1'
+        retrofitLoggingInterceptor = 'com.squareup.okhttp3:logging-interceptor:4.9.0'
         gson = 'com.google.code.gson:gson:2.8.6'
         // test dependencies
         androidXTestRunner = 'androidx.test:runner:1.3.0'
         androidXTestCore = 'androidx.test:core:1.3.0'
         hamcrest = 'org.hamcrest:hamcrest:2.2'
-        mockito = 'org.mockito:mockito-android:3.5.10'
+        mockito = 'org.mockito:mockito-android:3.8.0'
     }
 
     repositories {
+        mavenCentral()
         google()
-        jcenter()
+        jcenter() {
+          // jcenter is scheduled for shutdown on May, 2021.
+            // All dependencies have to be found elsewhere by that time.
+            // List exhaustively all dependencies that still can only be found on
+            // jcenter. To be maintained regularly.
+            content {
+                includeModule('org.jetbrains.trove4j', 'trove4j')
+            }
+        }
     }
 
     group "com.parrot.drone.${product}"
@@ -103,10 +125,22 @@ subprojects { project ->
                 }
 
                 compileOptions {
-                    sourceCompatibility JavaVersion.VERSION_1_8
-                    targetCompatibility JavaVersion.VERSION_1_8
+                    sourceCompatibility javaVersion
+                    targetCompatibility javaVersion
                 }
             }
+        }
+    }
+}
+
+project('groundsdk') {
+    afterEvaluate {
+        // NOTE : As of AGP 4.1.0, VERSION_NAME is not relevant anymore for libraries and thus is
+        //        not automatically injected in BuildConfig by the plugin anymore.
+        //        We emulate the former behavior here.
+        android.buildTypes {
+            debug.buildConfigField 'String', 'VERSION_NAME', "\"${versionName}${versionNameSuffix}\""
+            release.buildConfigField 'String', 'VERSION_NAME', "\"${versionName}\""
         }
     }
 }
